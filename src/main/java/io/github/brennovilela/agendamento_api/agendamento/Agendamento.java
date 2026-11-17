@@ -1,6 +1,7 @@
 package io.github.brennovilela.agendamento_api.agendamento;
 
 import io.github.brennovilela.agendamento_api.cliente.Cliente;
+import io.github.brennovilela.agendamento_api.compartilhado.RegraNegocioException;
 import io.github.brennovilela.agendamento_api.profissional.Profissional;
 import io.github.brennovilela.agendamento_api.servico.Servico;
 import jakarta.persistence.*;
@@ -61,10 +62,10 @@ public class Agendamento {
 
     public void cancelar(LocalDateTime agora) {
         if (status == StatusAgendamento.CANCELADO || status == StatusAgendamento.CONCLUIDO) {
-            throw new IllegalStateException("Agendamento não pode ser cancelado no status " + status);
+            throw new RegraNegocioException("Agendamento não pode ser cancelado no status " + status);
         }
         if (agora.plus(ANTECEDENCIA_MINIMA_CANCELAMENTO).isAfter(inicio)) {
-            throw new IllegalStateException("Cancelamento exige pelo menos 2 horas de antecedência");
+            throw new RegraNegocioException("Cancelamento exige pelo menos 2 horas de antecedência");
         }
         this.status = StatusAgendamento.CANCELADO;
     }
