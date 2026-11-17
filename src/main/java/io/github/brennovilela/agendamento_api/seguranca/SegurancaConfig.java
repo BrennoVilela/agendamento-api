@@ -37,6 +37,7 @@ public class SegurancaConfig {
                         // Público: consultas do catálogo e da disponibilidade
                         .requestMatchers(HttpMethod.GET,
                                 "/servicos",
+                                "/servicos/*",
                                 "/profissionais",
                                 "/profissionais/*/horarios",
                                 "/profissionais/*/disponibilidade").permitAll()

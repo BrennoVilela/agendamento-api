@@ -1,5 +1,6 @@
 package io.github.brennovilela.agendamento_api.servico;
 
+import io.github.brennovilela.agendamento_api.compartilhado.RecursoNaoEncontradoException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -44,5 +45,12 @@ public class ServicoController {
     @GetMapping
     public List<ServicoResponse> listar() {
         return repository.findAll().stream().map(ServicoResponse::de).toList();
+    }
+
+    @GetMapping("/{id}")
+    public ServicoResponse buscar(@PathVariable Long id) {
+        return repository.findById(id)
+                .map(ServicoResponse::de)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Serviço não encontrado"));
     }
 }
