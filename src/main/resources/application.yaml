@@ -9,3 +9,10 @@ spring:
       hibernate:
         format_sql: true
     show-sql: true
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:troque-este-segredo-em-producao-ele-precisa-ter-32-bytes}
+  admin:
+    email: ${ADMIN_EMAIL:admin@agendamento.com}
+    senha: ${ADMIN_SENHA:admin12345}

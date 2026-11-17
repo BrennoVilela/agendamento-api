@@ -7,6 +7,7 @@ import io.github.brennovilela.agendamento_api.compartilhado.RegraNegocioExceptio
 import io.github.brennovilela.agendamento_api.profissional.HorarioTrabalhoRepository;
 import io.github.brennovilela.agendamento_api.profissional.Profissional;
 import io.github.brennovilela.agendamento_api.profissional.ProfissionalRepository;
+import io.github.brennovilela.agendamento_api.seguranca.UsuarioLogado;
 import io.github.brennovilela.agendamento_api.servico.Servico;
 import io.github.brennovilela.agendamento_api.servico.ServicoRepository;
 import lombok.RequiredArgsConstructor;
@@ -57,14 +58,6 @@ public class AgendamentoService {
         return agendamentoRepository.save(agendamento);
     }
 
-    @Transactional
-    public Agendamento cancelar(Long agendamentoId) {
-        Agendamento agendamento = agendamentoRepository.findById(agendamentoId)
-                .orElseThrow(() -> new RecursoNaoEncontradoException("Agendamento não encontrado"));
-        agendamento.cancelar(LocalDateTime.now(clock));
-        return agendamento;
-    }
-
     private void validarExpediente(Long profissionalId, Agendamento agendamento) {
         LocalDateTime inicio = agendamento.getInicio();
         LocalDateTime fim = agendamento.getFim();
@@ -87,5 +80,14 @@ public class AgendamentoService {
         if (agendamentoRepository.existeConflito(profissionalId, agendamento.getInicio(), agendamento.getFim())) {
             throw new ConflitoDeHorarioException();
         }
+    }
+
+    @Transactional
+    public Agendamento cancelar(Long agendamentoId, UsuarioLogado usuario) {
+        Agendamento agendamento = agendamentoRepository.findById(agendamentoId)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Agendamento não encontrado"));
+        usuario.verificarAcessoAoCliente(agendamento.getCliente().getId());
+        agendamento.cancelar(LocalDateTime.now(clock));
+        return agendamento;
     }
 }

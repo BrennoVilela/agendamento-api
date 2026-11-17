@@ -1,6 +1,8 @@
 package io.github.brennovilela.agendamento_api.compartilhado;
 
 import io.github.brennovilela.agendamento_api.agendamento.ConflitoDeHorarioException;
+import io.github.brennovilela.agendamento_api.seguranca.AcessoNegadoException;
+import io.github.brennovilela.agendamento_api.seguranca.CredenciaisInvalidasException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -59,5 +61,15 @@ public class TratadorDeErros {
     public ProblemDetail parametroInvalido(MethodArgumentTypeMismatchException ex) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST,
                 "Valor inválido para o parâmetro '" + ex.getName() + "': " + ex.getValue());
+    }
+
+    @ExceptionHandler(CredenciaisInvalidasException.class)
+    public ProblemDetail credenciaisInvalidas(CredenciaisInvalidasException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.UNAUTHORIZED, ex.getMessage());
+    }
+
+    @ExceptionHandler(AcessoNegadoException.class)
+    public ProblemDetail acessoNegado(AcessoNegadoException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, ex.getMessage());
     }
 }
