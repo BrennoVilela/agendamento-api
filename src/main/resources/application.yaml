@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: agendamento-api
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: true
