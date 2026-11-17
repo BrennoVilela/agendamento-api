@@ -85,7 +85,7 @@ public class AgendamentoService {
 
     private void validarConflito(Long profissionalId, Agendamento agendamento) {
         if (agendamentoRepository.existeConflito(profissionalId, agendamento.getInicio(), agendamento.getFim())) {
-            throw new RegraNegocioException("Profissional já possui agendamento nesse horário");
+            throw new ConflitoDeHorarioException();
         }
     }
 }

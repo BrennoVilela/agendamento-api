@@ -1,5 +1,6 @@
 package io.github.brennovilela.agendamento_api.profissional;
 
+import io.github.brennovilela.agendamento_api.compartilhado.RegraNegocioException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -35,7 +36,7 @@ public class HorarioTrabalho {
     public HorarioTrabalho(Profissional profissional, DayOfWeek diaSemana,
                            LocalTime horaInicio, LocalTime horaFim) {
         if (!horaFim.isAfter(horaInicio)) {
-            throw new IllegalArgumentException("Hora de fim deve ser depois da hora de início");
+            throw new RegraNegocioException("Hora de fim deve ser depois da hora de início");
         }
         this.profissional = profissional;
         this.diaSemana = diaSemana;

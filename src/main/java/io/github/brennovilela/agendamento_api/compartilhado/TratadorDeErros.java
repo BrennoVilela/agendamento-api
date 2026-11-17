@@ -1,0 +1,49 @@
+package io.github.brennovilela.agendamento_api.compartilhado;
+
+import io.github.brennovilela.agendamento_api.agendamento.ConflitoDeHorarioException;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+@RestControllerAdvice
+public class TratadorDeErros {
+
+    @ExceptionHandler(RecursoNaoEncontradoException.class)
+    public ProblemDetail naoEncontrado(RecursoNaoEncontradoException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler(ConflitoDeHorarioException.class)
+    public ProblemDetail conflitoDeHorario(ConflitoDeHorarioException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    @ExceptionHandler(RegraNegocioException.class)
+    public ProblemDetail regraNegocio(RegraNegocioException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ProblemDetail violacaoIntegridade(DataIntegrityViolationException ex) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT,
+                "Registro duplicado ou viola uma restrição do banco");
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ProblemDetail validacao(MethodArgumentNotValidException ex) {
+        Map<String, String> erros = new LinkedHashMap<>();
+        for (FieldError erro : ex.getBindingResult().getFieldErrors()) {
+            erros.put(erro.getField(), erro.getDefaultMessage());
+        }
+        ProblemDetail problema = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Dados inválidos");
+        problema.setProperty("erros", erros);
+        return problema;
+    }
+}
