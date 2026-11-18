@@ -1,6 +1,8 @@
 package io.github.brennovilela.agendamento_api.profissional;
 
 import io.github.brennovilela.agendamento_api.compartilhado.RecursoNaoEncontradoException;
+import io.github.brennovilela.agendamento_api.servico.ServicoController;
+import io.github.brennovilela.agendamento_api.servico.ServicoRepository;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -74,5 +76,12 @@ public class ProfissionalController {
     @GetMapping("/{id}/horarios")
     public List<HorarioResponse> listarHorarios(@PathVariable Long id) {
         return horarioTrabalhoRepository.findByProfissionalId(id).stream().map(HorarioResponse::de).toList();
+    }
+
+    @GetMapping("/{id}")
+    public ProfissionalResponse buscarProfissional(@PathVariable Long id) {
+        return profissionalRepository.findById(id)
+                .map(ProfissionalResponse::de)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Profissional não encontrado"));
     }
 }

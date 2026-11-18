@@ -39,6 +39,7 @@ public class SegurancaConfig {
                                 "/servicos",
                                 "/servicos/*",
                                 "/profissionais",
+                                "/profissionais/*",
                                 "/profissionais/*/horarios",
                                 "/profissionais/*/disponibilidade").permitAll()
                         // Qualquer usuário logado (o dono de cada agendamento é checado no código)
