@@ -34,4 +34,8 @@ public class Servico {
         this.duracaoMinutos = duracaoMinutos;
         this.preco = preco;
     }
+
+    public void desativar() {
+        this.ativo = false;
+    }
 }

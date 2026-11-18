@@ -145,7 +145,6 @@ class SegurancaIntegrationTest {
 
     @Test
     void clienteNaoPodeCancelarAgendamentoDeOutroCliente() throws Exception {
-        // ADMIN monta o catálogo
         String admin = loginAdmin();
         Long servicoId = criar(admin, "/servicos", """
                 {"nome": "Corte", "duracaoMinutos": 30, "preco": 50.00}
@@ -169,5 +168,55 @@ class SegurancaIntegrationTest {
         mvc.perform(patch("/agendamentos/" + agendamentoId + "/cancelamento").header("Authorization", bearer(clienteB)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("CANCELADO"));
+    }
+
+    @Test
+    void servicoEProfissionalPodemSerConsultadosSemLogin() throws Exception {
+        String admin = loginAdmin();
+        Long servicoId = criar(admin, "/servicos", """
+                {"nome": "Sobrancelha", "duracaoMinutos": 15, "preco": 20.00}
+                """);
+        Long profissionalId = criar(admin, "/profissionais", """
+                {"nome": "Maria", "email": "prof-%s@barbearia.com"}
+                """.formatted(UUID.randomUUID()));
+
+        mvc.perform(get("/servicos/" + servicoId)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.nome").value("Sobrancelha"));
+        mvc.perform(get("/servicos/999999")).andExpect(status().isNotFound());
+        mvc.perform(get("/profissionais/" + profissionalId)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.nome").value("Maria"));
+        mvc.perform(get("/profissionais/999999")).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void servicoDesativadoNaoAceitaNovosAgendamentos() throws Exception {
+        String admin = loginAdmin();
+        Long servicoId = criar(admin, "/servicos", """
+                {"nome": "Pigmentação", "duracaoMinutos": 30, "preco": 70.00}
+                """);
+        Long profissionalId = criar(admin, "/profissionais", """
+                {"nome": "Pedro", "email": "prof-%s@barbearia.com"}
+                """.formatted(UUID.randomUUID()));
+        criar(admin, "/profissionais/" + profissionalId + "/horarios", """
+                {"diaSemana": "WEDNESDAY", "horaInicio": "09:00", "horaFim": "18:00"}
+                """);
+
+        String cliente = registrarCliente();
+        mvc.perform(patch("/servicos/" + servicoId + "/desativacao").header("Authorization", bearer(cliente)))
+                .andExpect(status().isForbidden());
+        mvc.perform(patch("/servicos/" + servicoId + "/desativacao").header("Authorization", bearer(admin)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.ativo").value(false));
+
+        mvc.perform(get("/servicos/" + servicoId)).andExpect(jsonPath("$.ativo").value(false));
+
+        mvc.perform(post("/agendamentos")
+                        .header("Authorization", bearer(cliente))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"clienteId": %d, "profissionalId": %d, "servicoId": %d, "inicio": "2030-01-02T10:00:00"}
+                                """.formatted(clienteIdDoToken(cliente), profissionalId, servicoId)))
+                .andExpect(status().isUnprocessableContent())
+                .andExpect(jsonPath("$.detail").value("Serviço inativo"));
     }
 }
